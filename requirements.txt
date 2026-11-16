@@ -1,0 +1,4 @@
+pupil-labs-realtime-api>=1.0
+opencv-python>=4.8
+numpy>=1.26
+flask>=3.0

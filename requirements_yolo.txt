@@ -1,0 +1,6 @@
+pupil-labs-realtime-api>=1.0
+opencv-python>=4.8
+numpy>=1.26
+flask>=3.0
+ultralytics>=8.4.0
+huggingface_hub>=0.27

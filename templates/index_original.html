@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Neon Smart Home</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #101827;
+            color: white;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #9caec5;
+        }
+
+        .connection {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 9px 16px;
+            border-radius: 20px;
+            background: #672c35;
+            color: #ff9da7;
+            font-size: 13px;
+        }
+
+        .connected {
+            background: #155d42;
+            color: #75f0b4;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .card {
+            background: #1c293b;
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid #304158;
+        }
+
+        .card h3 {
+            color: #9caec5;
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .main-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .lamp-container {
+            text-align: center;
+            padding: 35px 20px;
+        }
+
+        .lamp {
+            font-size: 100px;
+            margin: 25px 0;
+            filter: grayscale(1);
+            transition: 0.3s;
+        }
+
+        .lamp.on {
+            filter: none;
+            text-shadow: 0 0 35px #ffdf65;
+        }
+
+        .lamp-status {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .on-text {
+            color: #5be39b;
+        }
+
+        .off-text {
+            color: #ff7070;
+        }
+
+        .color-indicator {
+            width: 65px;
+            height: 65px;
+            border-radius: 12px;
+            margin: 20px auto;
+            background: #34445a;
+            border: 2px solid #65758b;
+        }
+
+        .blue {
+            background: #1769ff;
+        }
+
+        .red {
+            background: #ff3030;
+        }
+
+        .data-list {
+            margin-top: 15px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 13px 0;
+            border-bottom: 1px solid #304158;
+            font-size: 14px;
+        }
+
+        .data-row span:first-child {
+            color: #9caec5;
+        }
+
+        .data-row span:last-child {
+            font-weight: bold;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .progress-container {
+            background: #34445a;
+            height: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: #36a3ff;
+            transition: width 0.2s;
+        }
+
+        .extra-data {
+            background: #101827;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #8fd3ff;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            max-height: 300px;
+        }
+
+        .log {
+            background: #101827;
+            padding: 15px;
+            border-radius: 8px;
+            height: 180px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: #b5c8df;
+            line-height: 1.8;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #71839b;
+            font-size: 12px;
+        }
+
+        @media(max-width: 750px) {
+
+            .cards,
+            .main-panel {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 15px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <header>
+
+        <h1>🏠 Neon Smart Home</h1>
+
+        <p>
+            Sistema de control domótico mediante seguimiento ocular
+        </p>
+
+        <div id="connection" class="connection">
+            ● Esperando conexión...
+        </div>
+
+    </header>
+
+
+    <!-- INFORMACIÓN GENERAL -->
+
+    <section class="cards">
+
+        <div class="card">
+
+            <h3>👁️ Estado de los lentes</h3>
+
+            <div class="value" id="wearStatus">
+                --
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>🎯 Coordenadas de mirada</h3>
+
+            <div class="value" id="coordinates">
+                X: -- | Y: --
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>⏱️ Tiempo de permanencia</h3>
+
+            <div class="value" id="dwellTime">
+                0.0 s
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PANEL PRINCIPAL -->
+
+    <section class="main-panel">
+
+
+        <!-- LÁMPARA -->
+
+        <div class="card lamp-container">
+
+            <h3>💡 Control de iluminación</h3>
+
+            <div id="lamp" class="lamp">
+                💡
+            </div>
+
+            <div id="lampStatus" class="lamp-status off-text">
+                LÁMPARA APAGADA
+            </div>
+
+            <p style="color:#9caec5; margin-top:20px;">
+
+                La lámpara cambia de estado cuando la mirada
+                permanece 3 segundos sobre el color correspondiente.
+
+            </p>
+
+        </div>
+
+
+        <!-- DETECCIÓN DE COLOR -->
+
+        <div class="card">
+
+            <h3>🎨 Detección de colores</h3>
+
+            <div id="colorIndicator" class="color-indicator">
+            </div>
+
+            <div style="text-align:center;">
+
+                <div class="value" id="detectedColor">
+                    Ninguno
+                </div>
+
+                <p style="color:#9caec5; margin-top:8px;">
+                    Color identificado por la cámara
+                </p>
+
+            </div>
+
+
+            <div class="data-list">
+
+                <div class="data-row">
+                    <span>Azul</span>
+                    <span>Encender lámpara</span>
+                </div>
+
+                <div class="data-row">
+                    <span>Rojo</span>
+                    <span>Apagar lámpara</span>
+                </div>
+
+                <div class="data-row">
+                    <span>Tiempo requerido</span>
+                    <span>3 segundos</span>
+                </div>
+
+            </div>
+
+
+            <h3 style="margin-top:25px;">
+                Progreso de selección
+            </h3>
+
+            <div class="progress-container">
+
+                <div id="progress" class="progress">
+                </div>
+
+            </div>
+
+            <p id="progressText" style="margin-top:10px; color:#9caec5;">
+                Esperando selección...
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- DATOS DE NEON -->
+
+    <section class="card" style="margin-top:20px;">
+
+        <h3>📊 Datos recibidos de Pupil Labs Neon</h3>
+
+
+        <div class="data-list">
+
+            <div class="data-row">
+                <span>Coordenada X</span>
+                <span id="gazeX">--</span>
+            </div>
+
+            <div class="data-row">
+                <span>Coordenada Y</span>
+                <span id="gazeY">--</span>
+            </div>
+
+            <div class="data-row">
+                <span>Timestamp</span>
+                <span id="timestamp">--</span>
+            </div>
+
+            <div class="data-row">
+                <span>Color detectado</span>
+                <span id="colorData">--</span>
+            </div>
+
+            <div class="data-row">
+                <span>Estado de conexión</span>
+                <span id="deviceConnection">--</span>
+            </div>
+
+            <div class="data-row">
+                <span>Mensaje del sistema</span>
+                <span id="systemMessage">--</span>
+            </div>
+
+        </div>
+
+
+        <h3 style="margin-top:25px;">
+            Datos adicionales del gaze
+        </h3>
+
+        <pre id="extraData" class="extra-data">
+Esperando datos...
+        </pre>
+
+    </section>
+
+
+    <!-- REGISTRO -->
+
+    <section class="card" style="margin-top:20px;">
+
+        <h3>📝 Registro de eventos</h3>
+
+        <div id="eventLog" class="log">
+            Sistema iniciado. Esperando datos de Neon...
+        </div>
+
+    </section>
+
+
+    <footer>
+        Neon Smart Home MVP | Eye Tracking + Python + HTML
+    </footer>
+
+</div>
+
+
+<script>
+
+    const lamp = document.getElementById("lamp");
+
+    const lampStatus = document.getElementById("lampStatus");
+
+    let previousLampState = null;
+
+    let previousColor = null;
+
+
+    // =====================================================
+    // REGISTRO DE EVENTOS
+    // =====================================================
+
+    function addLog(message) {
+
+        const log = document.getElementById("eventLog");
+
+        const time = new Date().toLocaleTimeString();
+
+        log.innerHTML += `<br>[${time}] ${message}`;
+
+        log.scrollTop = log.scrollHeight;
+
+    }
+
+
+    // =====================================================
+    // ESTADO DE LÁMPARA
+    // =====================================================
+
+    function updateLamp(isOn) {
+
+        if (isOn) {
+
+            lamp.classList.add("on");
+
+            lampStatus.textContent = "LÁMPARA ENCENDIDA";
+
+            lampStatus.className = "lamp-status on-text";
+
+        } else {
+
+            lamp.classList.remove("on");
+
+            lampStatus.textContent = "LÁMPARA APAGADA";
+
+            lampStatus.className = "lamp-status off-text";
+
+        }
+
+
+        if (previousLampState !== isOn) {
+
+            addLog(
+                isOn
+                ? "💡 Lámpara encendida"
+                : "💡 Lámpara apagada"
+            );
+
+            previousLampState = isOn;
+
+        }
+
+    }
+
+
+    // =====================================================
+    // DETECCIÓN DE COLOR
+    // =====================================================
+
+    function updateColor(color) {
+
+        const indicator =
+            document.getElementById("colorIndicator");
+
+        document.getElementById("detectedColor").textContent =
+            color;
+
+        document.getElementById("colorData").textContent =
+            color;
+
+        indicator.className = "color-indicator";
+
+
+        if (color === "Azul") {
+
+            indicator.classList.add("blue");
+
+        }
+
+        else if (color === "Rojo") {
+
+            indicator.classList.add("red");
+
+        }
+
+
+        if (previousColor !== color && color !== "Ninguno") {
+
+            addLog("Color detectado: " + color);
+
+        }
+
+        previousColor = color;
+
+    }
+
+
+    // =====================================================
+    // RECIBIR DATOS DESDE PYTHON
+    // =====================================================
+
+    async function getData() {
+
+        try {
+
+            const response = await fetch(
+                "/api/state",
+                { cache: "no-store" }
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Error HTTP: " + response.status
+                );
+
+            }
+
+            const data = await response.json();
+
+
+            // CONEXIÓN
+
+            const connection =
+                document.getElementById("connection");
+
+            if (data.connected) {
+
+                connection.textContent =
+                    "● Neon conectado";
+
+                connection.className =
+                    "connection connected";
+
+            } else {
+
+                connection.textContent =
+                    "● Esperando conexión con Neon";
+
+                connection.className =
+                    "connection";
+
+            }
+
+
+            // ESTADO DE LENTES
+
+            document.getElementById("wearStatus").textContent =
+                data.worn ? "En uso" : "No detectados";
+
+
+            document.getElementById("deviceConnection").textContent =
+                data.connected ? "Conectado" : "Desconectado";
+
+
+            // COORDENADAS
+
+            const x = data.gaze_x ?? "--";
+
+            const y = data.gaze_y ?? "--";
+
+            document.getElementById("coordinates").textContent =
+                `X: ${x} | Y: ${y}`;
+
+            document.getElementById("gazeX").textContent = x;
+
+            document.getElementById("gazeY").textContent = y;
+
+
+            // TIEMPO
+
+            const dwell = Number(data.dwell_time || 0);
+
+            document.getElementById("dwellTime").textContent =
+                dwell.toFixed(1) + " s";
+
+
+            // PROGRESO
+
+            const progress = Number(data.progress || 0);
+
+            document.getElementById("progress").style.width =
+                progress + "%";
+
+            document.getElementById("progressText").textContent =
+                progress >= 100
+                ? "Selección completada"
+                : `Progreso: ${progress}%`;
+
+
+            // COLOR
+
+            updateColor(
+                data.detected_color || "Ninguno"
+            );
+
+
+            // LÁMPARA
+
+            updateLamp(
+                data.lamp_on === true
+            );
+
+
+            // TIMESTAMP
+
+            document.getElementById("timestamp").textContent =
+                data.timestamp || "--";
+
+
+            // MENSAJE
+
+            document.getElementById("systemMessage").textContent =
+                data.message || "--";
+
+
+            // DATOS ADICIONALES
+
+            document.getElementById("extraData").textContent =
+                JSON.stringify(
+                    data.gaze_data || {},
+                    null,
+                    2
+                );
+
+        }
+
+        catch (error) {
+
+            const connection =
+                document.getElementById("connection");
+
+            connection.textContent =
+                "● Error de comunicación con Python";
+
+            connection.className =
+                "connection";
+
+            document.getElementById("deviceConnection").textContent =
+                "Sin comunicación";
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    // ACTUALIZACIÓN CADA 200 MILISEGUNDOS
+
+    setInterval(getData, 200);
+
+    getData();
+
+</script>
+
+</body>
+
+</html>

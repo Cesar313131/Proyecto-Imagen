@@ -1,0 +1,94 @@
+NEON SMART HOME - DASHBOARD SIN VIDEO + PUERTA ANIMADA
+=====================================================
+
+CAMBIOS EN ESTA VERSION
+-----------------------
+1. Video en una ventana SEPARADA de OpenCV (cajas de YOLO + punto de mirada).
+   El HTML NO solicita /video_feed y Python YA NO codifica frames JPEG
+   ni transmite video al navegador.
+2. Puerta virtual 3D: abre o cierra progresivamente en unos 2.5 segundos.
+3. Confirmaciones visibles: objeto detectado, mirando, progreso, selección
+   confirmada, puerta abriendo/cerrando y acción virtual completada.
+4. Contador de selección ocular en anillo, barra de avance y notificaciones.
+5. Mantiene las coordenadas X/Y, conexión, datos oculares, lámpara virtual,
+   detecciones YOLO y registro de eventos.
+6. Indicadores adicionales: FPS estimados y tiempo de procesamiento por frame.
+
+ESTADO REAL DEL PROYECTO
+------------------------
+- Laptop: YOLOv8n COCO, modelo preentrenado de terceros.
+- Puertas: modelo externo con clases door / doorway; se interpretan como
+  probablemente cerrada / abierta. ESTA CLASIFICACION PUEDE FALLAR.
+- La puerta y la lámpara del dashboard son VIRTUALES; no hay actuadores reales.
+- NO hay pesos nuevos entrenados por el autor de este paquete.
+- Las comprobaciones de la interfaz no reemplazan una prueba con lentes físicos.
+
+REQUISITOS
+----------
+- Windows 10 u 11, 64 bits.
+- Python 3.11 o 3.12 con lanzador `py`.
+- Internet para instalar librerías y descargar los dos modelos preentrenados.
+- Pupil Labs Neon con Neon Companion; PC y teléfono en red accesible.
+
+INSTALACION EN WINDOWS
+----------------------
+1. Descomprime el ZIP en la carpeta UPNA (o cualquier lugar).
+2. Abre PowerShell DENTRO de la carpeta Neon_Smart_Home_YOLO.
+   Si quedaste en una carpeta superior, entra a la subcarpeta con:
+      cd .\Neon_Smart_Home_YOLO
+3. Instala dependencias UNA SOLA VEZ:
+      .\INSTALAR_WINDOWS.cmd
+4. Descarga los dos modelos UNA SOLA VEZ:
+      .\DESCARGAR_MODELOS.cmd
+5. Conecta y colócate los lentes Neon. Cierra otras apps Python que usen
+   el stream de Neon o Flask en el puerto 5000.
+6. Inicia el programa:
+      .\INICIAR_SISTEMA.cmd
+7. El navegador debería abrir: http://127.0.0.1:5000
+   El VIDEO NO estará en el HTML. Mira la ventana independiente de OpenCV.
+8. Mira una puerta 1.5 s para cambiar la puerta VIRTUAL (abrir/cerrar);
+   aparta la mirada al menos 0.3 s para habilitar otra selección.
+9. Para detener, Q/ESC en OpenCV o Ctrl+C en la terminal.
+
+COMANDOS AVANZADOS (DESDE ESTA CARPETA)
+--------------------------------------
+   .\.venv_neon\Scripts\python.exe neon_dashboard.py --imgsz 320
+   .\.venv_neon\Scripts\python.exe neon_dashboard.py --imgsz 256
+   .\.venv_neon\Scripts\python.exe neon_dashboard.py --dwell 2.0
+   .\.venv_neon\Scripts\python.exe neon_dashboard.py --port 5050
+
+--imgsz 256 reduce trabajo del modelo, pero puede perder detecciones.
+--port 5050: abrir http://127.0.0.1:5050 en el navegador.
+Si va lento incluso sin enviar video al HTML, el mayor costo restante
+son las dos inferencias YOLO por cada frame. Verifica CUDA/CPU:
+   .\.venv_neon\Scripts\python.exe -c "import torch; print(torch.cuda.is_available())"
+Nota: aunque el Python del entorno anterior aparezca activo en la terminal,
+los .cmd usan el entorno .venv_neon ubicado en ESTA carpeta.
+
+ARCHIVOS PRINCIPALES
+--------------------
+neon_dashboard.py          Flask + Neon + YOLO, ventana OpenCV separada
+vision_core.py             Detecciones + selección por permanencia
+templates\index.html       Dashboard mejorado SIN STREAM DE VIDEO
+INICIAR_SISTEMA.cmd        Arranque con modelo y lentes
+DESCARGAR_MODELOS.cmd      Descarga modelos públicos
+modelos\                   Carpeta de pesos descargados
+resultados\selecciones.csv Eventos de selección (sin videos)
+
+ARCHIVOS ORIGINALES DE RESPALDO
+-------------------------------
+neon_domotica.py y templates\index_original.html se preservan para comparar.
+NO ejecutes neon_domotica.py al mismo tiempo: también utiliza el puerto 5000.
+
+PRIVACIDAD
+----------
+La imagen se procesa en Python y se muestra localmente en OpenCV, pero YA NO
+se envía al navegador. La API local /api/state sí transmite coordenadas y
+estados para actualizar el dashboard. Por defecto, Flask escucha solo en
+127.0.0.1 (tu equipo). Los eventos de selección se guardan en CSV.
+
+
+CORRECCION 13-11-2026: fallo al empezar la deteccion YOLO
+Se sustituyo obj.conf/target.conf por obj.confidence/target.confidence.
+Si aparece otro error, copiar el Traceback completo de PowerShell.
+No se necesita descargar modelos de nuevo si solo sustituyes neon_dashboard.py.
